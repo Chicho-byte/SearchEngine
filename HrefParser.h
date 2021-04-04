@@ -67,11 +67,11 @@ int main(void)
 
 	cout << endl << "-------------------" << endl;
 	
-
+/*
 	string text = "Hello World";
 	cout << text.find("r") << endl;
 	cout << text.substr(3, 4) << endl;
-	
+	*/
 	return 0;
 }
 
