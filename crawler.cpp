@@ -177,3 +177,4 @@ int main_regex()
 	//	std::cout << GetContents("shttps://www.google.com/") << std::endl;
 
 	return 0;
+}
