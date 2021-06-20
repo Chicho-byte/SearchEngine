@@ -9,7 +9,10 @@
 #include "linkQueue.h"
 #include "repo_in_memory.hpp"
 #include "indexer.hpp"
+
 using namespace std;
+
+
 
 std::string GetContents(std::string url)
 {
@@ -27,7 +30,7 @@ std::string GetContents(std::string url)
 
 		if (!pResponse->isSuccessful())
 		{
-			std::cerr << "HTTP GET Error: (" << pResponse->getCode() << ")" << "-" <<url <<std::endl;
+			//std::cerr << "HTTP GET Error: (" << pResponse->getCode() << ")" << "-" <<url <<std::endl;
 			
 			return "";
 		}
@@ -49,6 +52,9 @@ std::string GetContents(std::string url)
 		return "";
 	}
 }
+
+
+
 
 const int MAX_MATCHES = 10;
 linkQueue Linkqueue;
@@ -73,17 +79,9 @@ void linkAdded(std::string link)
 	}
 	//Saves site
 	repo->SaveSite(link, contents);
-	//cout << "Contents size : "<<contents.size()<<endl;
-	//indexer activation
+
 	indexer.AddSite(link, contents);
 
-	//stop after 50 sites
-	/* if (count++ > 50)		//funkciai kancheri qanaknenq hashvum
-	{
-		cout << "Stopping crawler!!!!!!!!" << endl;
-		return;
-	}
-*/
 	const std::string link_prefix = "href=";
 	size_t pos = 0;
 
@@ -102,79 +100,75 @@ void linkAdded(std::string link)
 		{
 			break;
 		}
-		std::string link = contents.substr(pos, end_pos - pos + 1);
+		std::string link = contents.substr(pos, end_pos - pos );
 		if (!(link.find("http") == 0))
 		{
-			//std::cout << "Skipping link " << link << std::endl;
+		
 			continue;
 		}
-		//std::cout << "Position = " << pos << "\tQuot = " << quot << "\tLink = " << link << std::endl;
+		
+		
 		Linkqueue.addLink(link);
 	}
 }
 
-void testHandler(std::string link)
-{
-	std::cout << "Link recieved " << link << std::endl;
-}
-
-void testHandler2(std::string link)
-{
-	std::cout << "Link recieved in test 2" << link << std::endl;
-}
 int run_server();
 
-int main()
+
+string findLinkUrl(string text,string &url)
 {
-	/*GetContents("https://qs.topuniversities.com/business-schools/discover/study-in-the-us-for-southeast-asian-students-2020?hsLang=en\"");
-	return 0;*/
-	//linkQueue LinkQueue;
-	std::cout << "Running crawler " << std::endl;
-	/*linkQueue.registerHandler(testHandler);
-	linkQueue.registerHandler(testHandler2);
-	linkQueue.addLink("https://blablabla");
-	linkQueue.addLink("https://asdf asdf");*/
+	std::string contents = GetContents("https://en.wikipedia.org/wiki/Car");
+	
 
-	repo = new RepoInMemory();
-	Linkqueue.registerHandler(linkAdded);
-	linkAdded("https://en.wikipedia.org/wiki/University");
-/*	sleep(2);
+	size_t startLinkPos = text.find("<a");
+	if (startLinkPos == -1) {
+		cout<< "";
+	}
+	 contents = text.substr(startLinkPos);
 
-		auto matches = indexer.GetRelevantURLs("university");
-		cout <<"================================="<<endl;
-		std::copy(matches.begin(), matches.end(), ostream_iterator<string>(std::cout, ",\n "));*/
-	cout << "Running Server : " << endl;
-	run_server();
-	cout << "Running crawler - Done! " << endl;
+	size_t endLinkPos = contents.find(">");
+	if (endLinkPos == -1) {
+		cout<<"";
+	}
+	contents = contents.substr(0, endLinkPos);
 
-	//Linkqueue.registerHandler(repo->SaveLink);
-	return 0;
-}
-int main_regex()
-{
-	std::string contents = GetContents("https://en.wikipedia.org/wiki/University");
-	//std::string regex = "<a\\s+(?:[^>]*?\\s+)?href=([\"'])(.*?)\\1"; //([-+.[:alnum:]]+://)?([-[:alnum:]]+.)*myURL.net(:[[:digit:]]+)?(/[[:graph:]]*)?"; //;
-	std::string regex = "(\\s)*(\t)*Mem([0-9]*) (\\s,\t)*= (\\s,\t)*[0-9]*(.)*[0-9]*";
-	regex_t re;
+	size_t hrefPos = contents.find("href=");
+	if (hrefPos == -1) {
+		cout<<"";
+	}
+	string closingScope = contents.substr(hrefPos + 5, 1);
+	contents = contents.substr(hrefPos + 6);
+	url = contents.substr(0, contents.find(closingScope));
 	const int MAX_MATCHES = 10;
-	if (regcomp(&re, regex.c_str(), REG_EXTENDED) != 0)
-	{
-		std::cerr << "Cannot compile regex" << std::endl;
-		return 1;
-	}
 	regmatch_t matches[MAX_MATCHES];
-	if (regexec(&re, contents.c_str(), sizeof(matches) / sizeof(matches[0]), (regmatch_t*)&matches, 0) == REG_NOMATCH)
-	{
-		std::cerr << "No links found" << std::endl;
-		return 1;
-	}
-
-	for (int i = 0, offset = 0; i < MAX_MATCHES && offset < contents.size(); ++i)
+for (int i = 0, offset = 0; i < MAX_MATCHES && offset < contents.size(); ++i)
 	{
 		std::cout << "Matches" << i << "->" << contents.substr(matches[i].rm_so, matches[i].rm_eo - matches[i].rm_so + 1) << std::endl;
 		offset = matches[i].rm_eo + 1;
 	}
-	//	std::cout << GetContents("shttps://www.google.com/") << std::endl;
 
+	 
+	return text.substr(startLinkPos + 2);
+}
+
+int main()
+{
+	
+	std::cout << "Running crawler " << std::endl;
+	
+
+	repo = new RepoInMemory();
+	Linkqueue.registerHandler(linkAdded);
+	linkAdded("https://en.wikipedia.org/wiki/Car");
+	string url;
+	
+
+	
+	cout << "Running Server : " << endl;
+	run_server();
+	cout<<endl << "Running crawler - Done! " << endl;
+
+
+	//Linkqueue.registerHandler(repo->SaveLink);
 	return 0;
 }
